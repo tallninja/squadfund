@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
-import { ChamaSyncLogo } from "@/components/icons";
+import { SquadFundLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { PanelLeft } from "lucide-react";
 
@@ -21,7 +21,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ChamaSync",
+  title: "SquadFund",
   description:
     "A digital table banking platform to manage multiple chamas (savings groups).",
 };
@@ -43,8 +43,8 @@ export default function RootLayout({
           <Sidebar>
             <div className="flex flex-col h-full">
               <div className="p-4 flex items-center gap-2">
-                <ChamaSyncLogo className="w-8 h-8 text-primary" />
-                <h1 className="text-xl font-bold font-headline">ChamaSync</h1>
+                <SquadFundLogo className="w-8 h-8 text-primary" />
+                <h1 className="text-xl font-bold font-headline">SquadFund</h1>
               </div>
               <MainNav />
             </div>
