@@ -34,7 +34,7 @@ const formSchema = z.object({
   name: z.string().min(3, "Chama name must be at least 3 characters long."),
 });
 
-export function CreateChamaDialog() {
+export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -67,31 +67,27 @@ export function CreateChamaDialog() {
     // Refresh the page to show the new chama in the list
     router.refresh();
   }
-  
-  const isCommandItem = !!(
-    typeof window !== "undefined" &&
-    window.document.querySelector('[role="combobox"]')
-  );
 
+  const TriggerComponent = fromCommand ? (
+     <CommandItem
+        onSelect={() => setOpen(true)}
+        className="text-sm"
+      >
+        <PlusCircle className="mr-2 h-4 w-4" />
+        Create Chama
+      </CommandItem>
+  ) : (
+    <DialogTrigger asChild>
+      <Button>
+        <PlusCircle className="mr-2 h-4 w-4" />
+        Create Chama
+      </Button>
+    </DialogTrigger>
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-       {isCommandItem ? (
-          <CommandItem
-            onSelect={() => setOpen(true)}
-            className="text-sm"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Chama
-          </CommandItem>
-        ) : (
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create Chama
-        </Button>
-        )}
-      </DialogTrigger>
+      {TriggerComponent}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create a New Chama</DialogTitle>

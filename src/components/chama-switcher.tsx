@@ -95,7 +95,7 @@ export function ChamaSwitcher() {
           <CommandSeparator />
           <CommandList>
             <CommandGroup>
-                <CreateChamaDialog />
+                <CreateChamaDialog fromCommand />
             </CommandGroup>
           </CommandList>
         </Command>
