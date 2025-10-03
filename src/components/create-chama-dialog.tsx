@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { chamas } from "@/lib/mock-data";
 import { PlusCircle } from "lucide-react";
+import { CommandItem } from "@/components/ui/command";
 
 const formSchema = z.object({
   name: z.string().min(3, "Chama name must be at least 3 characters long."),
@@ -66,14 +67,30 @@ export function CreateChamaDialog() {
     // Refresh the page to show the new chama in the list
     router.refresh();
   }
+  
+  const isCommandItem = !!(
+    typeof window !== "undefined" &&
+    window.document.querySelector('[role="combobox"]')
+  );
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
+       {isCommandItem ? (
+          <CommandItem
+            onSelect={() => setOpen(true)}
+            className="text-sm"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Chama
+          </CommandItem>
+        ) : (
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
           Create Chama
         </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

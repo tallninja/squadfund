@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -15,11 +17,28 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { getGamificationData } from "@/lib/actions";
-import { Lightbulb, Trophy, Flame, TrendingUp, Wallet } from "lucide-react";
+import { Lightbulb, Trophy, Flame, Wallet } from "lucide-react";
 import { ContributionsChart } from "@/components/contributions-chart";
+import { useChama } from "@/context/chama-context";
+import { useState, useEffect } from "react";
+import type { ContributionGamificationOutput } from "@/ai/flows/contribution-gamification";
 
-export default async function ContributionsPage() {
-  const gamificationData = await getGamificationData();
+export default function ContributionsPage() {
+  const { activeChama } = useChama();
+  const [gamificationData, setGamificationData] =
+    useState<ContributionGamificationOutput | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const data = await getGamificationData(activeChama?.id ?? null);
+      setGamificationData(data);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [activeChama]);
 
   const sortedMembers =
     gamificationData?.memberScores.sort((a, b) => b.score - a.score) ?? [];
@@ -42,13 +61,20 @@ export default async function ContributionsPage() {
                 AI-Powered Suggestions
               </CardTitle>
               <CardDescription>
-                How to improve engagement based on current data.
+                How to improve engagement for{" "}
+                <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed">
-                {gamificationData.suggestedRuleTweaks}
-              </p>
+              {loading ? (
+                 <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground animate-pulse">Generating suggestions...</p>
+                 </div>
+              ) : (
+                <p className="text-sm leading-relaxed">
+                  {gamificationData.suggestedRuleTweaks}
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
@@ -61,7 +87,8 @@ export default async function ContributionsPage() {
             Contribution Leaderboard
           </CardTitle>
           <CardDescription>
-            Top contributors based on gamification scores.
+            Top contributors for{" "}
+            <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,32 +102,42 @@ export default async function ContributionsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedMembers.map((memberScore, index) => (
-                <TableRow key={memberScore.memberId}>
-                  <TableCell className="font-bold text-lg">
-                    {index + 1}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {memberScore.memberId}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold">
-                    {memberScore.score} pts
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="secondary" className="gap-1">
-                      <Flame className="h-4 w-4 text-orange-500" />
-                      {memberScore.streak}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-               {sortedMembers.length === 0 && (
+              {loading ? (
                 <TableRow>
                   <TableCell
                     colSpan={4}
                     className="text-center text-muted-foreground"
                   >
-                    No leaderboard data available.
+                    Loading leaderboard...
+                  </TableCell>
+                </TableRow>
+              ) : sortedMembers.length > 0 ? (
+                sortedMembers.map((memberScore, index) => (
+                  <TableRow key={memberScore.memberId}>
+                    <TableCell className="font-bold text-lg">
+                      {index + 1}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {memberScore.memberId}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {memberScore.score} pts
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="secondary" className="gap-1">
+                        <Flame className="h-4 w-4 text-orange-500" />
+                        {memberScore.streak}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="text-center text-muted-foreground"
+                  >
+                    No leaderboard data available for this chama.
                   </TableCell>
                 </TableRow>
               )}

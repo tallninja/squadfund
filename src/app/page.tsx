@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, Users, Wallet, Landmark, PlusCircle } from "lucide-react";
+import { ArrowUpRight, Users, Wallet, Landmark } from "lucide-react";
 import { chamas, members, contributions } from "@/lib/mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getImageUrl } from "@/lib/utils";
@@ -76,7 +76,6 @@ export default function DashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Chama Overview</CardTitle>
-          <CreateChamaDialog />
         </CardHeader>
         <CardContent>
           <Table>

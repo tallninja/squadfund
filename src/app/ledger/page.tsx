@@ -1,3 +1,4 @@
+'use client';
 import {
   Card,
   CardContent,
@@ -24,18 +25,25 @@ import {
 } from "@/components/ui/select";
 import { chamas, members, contributions, loans } from "@/lib/mock-data";
 import { BookText, Search } from "lucide-react";
+import { useChama } from "@/context/chama-context";
 
 export default function LedgerPage() {
+  const { activeChama } = useChama();
+
   const allTransactions = [
     ...contributions.map((c) => ({ ...c, type: "Contribution" })),
     ...loans.map((l) => ({ ...l, type: "Loan" })),
-  ].sort(
-    (a, b) => new Date(b.date || b.requestDate).getTime() - new Date(a.date || a.requestDate).getTime()
-  );
+  ]
+    .filter((tx) => !activeChama || tx.chamaId === activeChama.id)
+    .sort(
+      (a, b) =>
+        new Date(b.date || b.requestDate).getTime() -
+        new Date(a.date || a.requestDate).getTime()
+    );
 
   return (
     <div className="flex flex-col gap-6">
-       <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4">
         <BookText className="w-8 h-8 text-primary" />
         <h1 className="text-3xl font-bold font-headline">General Ledger</h1>
       </div>
@@ -44,7 +52,8 @@ export default function LedgerPage() {
         <CardHeader>
           <CardTitle>All Transactions</CardTitle>
           <CardDescription>
-            A complete record of all financial activities.
+            A complete record of all financial activities for{" "}
+            <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -57,19 +66,6 @@ export default function LedgerPage() {
                 className="pl-8 sm:w-full"
               />
             </div>
-            <Select>
-              <SelectTrigger className="sm:w-[180px]">
-                <SelectValue placeholder="Filter by Chama" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Chamas</SelectItem>
-                {chamas.map((chama) => (
-                  <SelectItem key={chama.id} value={chama.id}>
-                    {chama.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Select>
               <SelectTrigger className="sm:w-[180px]">
                 <SelectValue placeholder="Filter by Type" />
@@ -104,7 +100,11 @@ export default function LedgerPage() {
                     <TableCell className="font-medium">{member?.name}</TableCell>
                     <TableCell>{chama?.name}</TableCell>
                     <TableCell>
-                      <Badge variant={tx.type === 'Contribution' ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={
+                          tx.type === "Contribution" ? "default" : "secondary"
+                        }
+                      >
                         {tx.type}
                       </Badge>
                     </TableCell>
@@ -114,6 +114,13 @@ export default function LedgerPage() {
                   </TableRow>
                 );
               })}
+               {allTransactions.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        No transactions for this chama.
+                    </TableCell>
+                </TableRow>
+               )}
             </TableBody>
           </Table>
         </CardContent>

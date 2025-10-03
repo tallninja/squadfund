@@ -3,9 +3,17 @@
 import { generateGamificationScores } from '@/ai/flows/contribution-gamification';
 import { contributions, members } from './mock-data';
 
-export async function getGamificationData() {
+export async function getGamificationData(chamaId: string | null) {
   try {
-    const memberContributionHistory = contributions.map(contribution => {
+    const filteredContributions = chamaId 
+      ? contributions.filter(c => c.chamaId === chamaId)
+      : contributions;
+
+    if (filteredContributions.length === 0) {
+        return { memberScores: [], suggestedRuleTweaks: "No contribution data available for this selection. Add contributions to generate insights." };
+    }
+      
+    const memberContributionHistory = filteredContributions.map(contribution => {
       const member = members.find(m => m.id === contribution.memberId);
       return {
         memberId: member?.name || contribution.memberId,

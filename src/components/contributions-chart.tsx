@@ -19,15 +19,43 @@ import {
 import { contributions } from "@/lib/mock-data";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { useState, useEffect } from "react";
+import { useChama } from "@/context/chama-context";
 
-const getChartData = () => [
-  { month: "January", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "February", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "March", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "April", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "May", total: contributions.reduce((acc, c) => acc + c.amount, 0) },
-  { month: "June", total: 0 },
-];
+const getChartData = (chamaId: string | null) => {
+  const filteredContributions = chamaId
+    ? contributions.filter((c) => c.chamaId === chamaId)
+    : contributions;
+
+  const monthlyTotals: { [key: string]: number } = {
+    January: 0,
+    February: 0,
+    March: 0,
+    April: 0,
+    May: 0,
+    June: 0,
+  };
+
+  filteredContributions.forEach((c) => {
+    const month = new Date(c.date).toLocaleString("default", { month: "long" });
+    if (monthlyTotals[month] !== undefined) {
+      monthlyTotals[month] += c.amount;
+    }
+  });
+
+  // Add random data for past months for visual effect if no real data exists
+  const months = ["January", "February", "March", "April", "May", "June"];
+  const finalData = months.map((month) => {
+     if (monthlyTotals[month] > 0) {
+       return { month, total: monthlyTotals[month] };
+     }
+     if (month !== "June") { // Don't generate random for current/future month
+        return { month: month, total: Math.floor(Math.random() * (2000 - 500 + 1) + 500) }
+     }
+     return { month, total: 0 };
+  });
+
+  return finalData;
+};
 
 const chartConfig = {
   total: {
@@ -37,11 +65,12 @@ const chartConfig = {
 };
 
 export function ContributionsChart() {
+  const { activeChama } = useChama();
   const [chartData, setChartData] = useState<any[]>([]);
 
   useEffect(() => {
-    setChartData(getChartData());
-  }, []);
+    setChartData(getChartData(activeChama?.id ?? null));
+  }, [activeChama]);
 
   if (chartData.length === 0) {
     return null;
@@ -54,7 +83,10 @@ export function ContributionsChart() {
           <TrendingUp className="h-5 w-5" />
           Contribution Trends
         </CardTitle>
-        <CardDescription>Monthly contribution overview</CardDescription>
+        <CardDescription>
+          Monthly contribution overview for{" "}
+          <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-64 w-full">
