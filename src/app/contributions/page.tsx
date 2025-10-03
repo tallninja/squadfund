@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { getGamificationData } from "@/lib/actions";
-import { Lightbulb, Trophy, Flame, TrendingUp } from "lucide-react";
+import { Lightbulb, Trophy, Flame, TrendingUp, Wallet } from "lucide-react";
 import {
   Bar,
   BarChart,
