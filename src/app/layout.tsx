@@ -3,7 +3,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/toaster";
-import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
 import { SquadFundLogo } from "@/components/icons";
@@ -54,10 +54,7 @@ export default function RootLayout({
             </Sidebar>
             <SidebarInset>
               <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6">
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <PanelLeft className="h-5 w-5" />
-                  <span className="sr-only">Toggle Sidebar</span>
-                </Button>
+                <SidebarTrigger className="md:hidden" />
                 <div className="w-full flex-1">
                   <ChamaSwitcher />
                 </div>
