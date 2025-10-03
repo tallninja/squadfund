@@ -20,7 +20,7 @@ import {
 import { getContributions } from "@/lib/api";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { useState, useEffect } from "react";
-import { useChama } from "@/context/chama-context";
+import { useSquad } from "@/context/squad-context";
 import { type Contribution } from "@/lib/mock-data";
 
 
@@ -32,14 +32,14 @@ const chartConfig = {
 };
 
 export function ContributionsChart() {
-  const { activeChama } = useChama();
+  const { activeSquad } = useSquad();
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getChartData = async (chamaId: string | null) => {
+    const getChartData = async (squadId: string | null) => {
         setLoading(true);
-        const filteredContributions = await getContributions(chamaId);
+        const filteredContributions = await getContributions(squadId);
 
         const monthlyTotals: { [key: string]: number } = {
             January: 0, February: 0, March: 0, April: 0, May: 0, June: 0,
@@ -67,8 +67,8 @@ export function ContributionsChart() {
         setLoading(false);
     };
 
-    getChartData(activeChama?.id ?? null);
-  }, [activeChama]);
+    getChartData(activeSquad?.id ?? null);
+  }, [activeSquad]);
 
   if (loading) {
     return <Card className="lg:col-span-2"><CardHeader><CardTitle>Contribution Trends</CardTitle></CardHeader><CardContent><p>Loading chart data...</p></CardContent></Card>;
@@ -87,7 +87,7 @@ export function ContributionsChart() {
         </CardTitle>
         <CardDescription>
           Monthly contribution overview for{" "}
-          <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+          <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
         </CardDescription>
       </CardHeader>
       <CardContent>

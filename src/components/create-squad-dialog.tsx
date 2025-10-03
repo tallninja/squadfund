@@ -27,20 +27,20 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { createChama } from "@/lib/api";
+import { createSquad } from "@/lib/api";
 import { PlusCircle } from "lucide-react";
 import { CommandItem } from "@/components/ui/command";
-import { useChama } from "@/context/chama-context";
+import { useSquad } from "@/context/squad-context";
 
 const formSchema = z.object({
-  name: z.string().min(3, "Chama name must be at least 3 characters long."),
+  name: z.string().min(3, "Squad name must be at least 3 characters long."),
 });
 
-export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
+export function CreateSquadDialog({ fromCommand }: { fromCommand?: boolean }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const { refreshChamas } = useChama();
+  const { refreshSquads } = useSquad();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,41 +51,44 @@ export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-        await createChama(values.name);
+        await createSquad(values.name);
 
         toast({
-            title: "Chama Created!",
+            title: "Squad Created!",
             description: `"${values.name}" has been successfully created.`,
         });
 
-        // Refresh the chamas list in the context
-        refreshChamas();
+        // Refresh the squads list in the context
+        refreshSquads();
         setOpen(false);
         form.reset();
         // router.refresh() is not needed if context handles the state
     } catch (error) {
-        console.error("Failed to create chama:", error);
+        console.error("Failed to create squad:", error);
         toast({
             variant: "destructive",
             title: "Error",
-            description: "Failed to create the chama. Please try again.",
+            description: "Failed to create the squad. Please try again.",
         });
     }
   }
 
   const TriggerComponent = fromCommand ? (
      <CommandItem
-        onSelect={() => setOpen(true)}
+        onSelect={() => {
+            form.reset(); 
+            setOpen(true)
+        }}
         className="text-sm"
       >
         <PlusCircle className="mr-2 h-4 w-4" />
-        Create Chama
+        Create Squad
       </CommandItem>
   ) : (
     <DialogTrigger asChild>
       <Button>
         <PlusCircle className="mr-2 h-4 w-4" />
-        Create Chama
+        Create Squad
       </Button>
     </DialogTrigger>
   );
@@ -95,7 +98,7 @@ export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
       {TriggerComponent}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create a New Chama</DialogTitle>
+          <DialogTitle>Create a New Squad</DialogTitle>
           <DialogDescription>
             Enter a name for your new savings group. Click save when you're done.
           </DialogDescription>
@@ -107,7 +110,7 @@ export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chama Name</FormLabel>
+                  <FormLabel>Squad Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Uhuru Savings" {...field} />
                   </FormControl>
@@ -118,7 +121,7 @@ export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Saving...' : 'Save Chama'}
+                {form.formState.isSubmitting ? 'Saving...' : 'Save Squad'}
               </Button>
             </DialogFooter>
           </form>

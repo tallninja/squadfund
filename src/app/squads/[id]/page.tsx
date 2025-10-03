@@ -19,25 +19,25 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { getChamaById, getMembers, getContributions, getLoans } from "@/lib/api";
-import { type Chama, type Member, type Contribution, type Loan } from "@/lib/mock-data";
+import { getSquadById, getMembers, getContributions, getLoans } from "@/lib/api";
+import { type Squad, type Member, type Contribution, type Loan } from "@/lib/mock-data";
 import { getImageUrl } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function ChamaDetailPage({ params }: { params: { id: string } }) {
-  const [chama, setChama] = useState<Chama | undefined>(undefined);
-  const [chamaMembers, setChamaMembers] = useState<Member[]>([]);
-  const [chamaContributions, setChamaContributions] = useState<Contribution[]>([]);
-  const [chamaLoans, setChamaLoans] = useState<Loan[]>([]);
+export default function SquadDetailPage({ params }: { params: { id: string } }) {
+  const [squad, setSquad] = useState<Squad | undefined>(undefined);
+  const [squadMembers, setSquadMembers] = useState<Member[]>([]);
+  const [squadContributions, setSquadContributions] = useState<Contribution[]>([]);
+  const [squadLoans, setSquadLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const chamaData = await getChamaById(params.id);
-        if (!chamaData) {
+        const squadData = await getSquadById(params.id);
+        if (!squadData) {
           notFound();
           return;
         }
@@ -48,13 +48,13 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
           getLoans(params.id),
         ]);
 
-        setChama(chamaData);
-        setChamaMembers(membersData);
-        setChamaContributions(contributionsData);
-        setChamaLoans(loansData);
+        setSquad(squadData);
+        setSquadMembers(membersData);
+        setSquadContributions(contributionsData);
+        setSquadLoans(loansData);
 
       } catch (error) {
-        console.error("Failed to fetch chama details:", error);
+        console.error("Failed to fetch squad details:", error);
       } finally {
         setLoading(false);
       }
@@ -67,7 +67,7 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
     return <div>Loading...</div>; // Or a proper loading skeleton
   }
 
-  if (!chama) {
+  if (!squad) {
     return notFound();
   }
 
@@ -75,8 +75,8 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">{chama.name}</CardTitle>
-          <CardDescription>Created on {chama.createdAt}</CardDescription>
+          <CardTitle className="font-headline text-3xl">{squad.name}</CardTitle>
+          <CardDescription>Created on {squad.createdAt}</CardDescription>
         </CardHeader>
       </Card>
 
@@ -89,7 +89,7 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
         <TabsContent value="members">
           <Card>
             <CardHeader>
-              <CardTitle>Members ({chamaMembers.length})</CardTitle>
+              <CardTitle>Members ({squadMembers.length})</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -101,7 +101,7 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {chamaMembers.map((member) => (
+                  {squadMembers.map((member) => (
                     <TableRow key={member.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -136,8 +136,8 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {chamaContributions.map((contribution) => {
-                    const member = chamaMembers.find(m => m.id === contribution.memberId);
+                  {squadContributions.map((contribution) => {
+                    const member = squadMembers.find(m => m.id === contribution.memberId);
                     return (
                       <TableRow key={contribution.id}>
                         <TableCell className="font-medium">{member?.name}</TableCell>
@@ -167,8 +167,8 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {chamaLoans.map((loan) => {
-                    const member = chamaMembers.find(m => m.id === loan.memberId);
+                  {squadLoans.map((loan) => {
+                    const member = squadMembers.find(m => m.id === loan.memberId);
                     return (
                       <TableRow key={loan.id}>
                         <TableCell className="font-medium">{member?.name}</TableCell>

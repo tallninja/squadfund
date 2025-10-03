@@ -5,10 +5,10 @@ import { generateGamificationScores } from '@/ai/flows/contribution-gamification
 import { getContributions, getMembers } from './api';
 
 
-export async function getGamificationData(chamaId: string | null) {
+export async function getGamificationData(squadId: string | null) {
   try {
     const [filteredContributions, allMembers] = await Promise.all([
-        getContributions(chamaId),
+        getContributions(squadId),
         getMembers()
     ]);
 

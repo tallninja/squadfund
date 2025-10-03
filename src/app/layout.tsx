@@ -9,8 +9,8 @@ import { UserNav } from "@/components/user-nav";
 import { SquadFundLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { PanelLeft } from "lucide-react";
-import { ChamaProvider } from "@/context/chama-context";
-import { ChamaSwitcher } from "@/components/chama-switcher";
+import { SquadProvider } from "@/context/squad-context";
+import { SquadSwitcher } from "@/components/squad-switcher";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,7 +25,7 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "SquadFund",
   description:
-    "A digital table banking platform to manage multiple chamas (savings groups).",
+    "A digital table banking platform to manage multiple squads (savings groups).",
 };
 
 export default function RootLayout({
@@ -41,7 +41,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable}`}>
-        <ChamaProvider>
+        <SquadProvider>
           <SidebarProvider>
             <Sidebar>
               <div className="flex flex-col h-full">
@@ -56,7 +56,7 @@ export default function RootLayout({
               <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6">
                 <SidebarTrigger className="md:hidden" />
                 <div className="w-full flex-1">
-                  <ChamaSwitcher />
+                  <SquadSwitcher />
                 </div>
                 <UserNav />
               </header>
@@ -65,7 +65,7 @@ export default function RootLayout({
               </main>
             </SidebarInset>
           </SidebarProvider>
-        </ChamaProvider>
+        </SquadProvider>
         <Toaster />
       </body>
     </html>

@@ -24,28 +24,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getChamas, getMembers, getContributions, getLoans } from "@/lib/api";
-import { type Chama, type Member, type Contribution, type Loan } from "@/lib/mock-data";
+import { getSquads, getMembers, getContributions, getLoans } from "@/lib/api";
+import { type Squad, type Member, type Contribution, type Loan } from "@/lib/mock-data";
 import { BookText, Search } from "lucide-react";
-import { useChama } from "@/context/chama-context";
+import { useSquad } from "@/context/squad-context";
 import { useEffect, useState } from "react";
 
 export default function LedgerPage() {
-  const { activeChama } = useChama();
+  const { activeSquad } = useSquad();
   const [allTransactions, setAllTransactions] = useState<(Contribution | Loan)[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
-  const [chamas, setChamas] = useState<Chama[]>([]);
+  const [squads, setSquads] = useState<Squad[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [contributionsData, loansData, membersData, chamasData] = await Promise.all([
-                getContributions(activeChama?.id ?? null),
-                getLoans(activeChama?.id ?? null),
+            const [contributionsData, loansData, membersData, squadsData] = await Promise.all([
+                getContributions(activeSquad?.id ?? null),
+                getLoans(activeSquad?.id ?? null),
                 getMembers(),
-                getChamas(),
+                getSquads(),
             ]);
 
             const transactions = [
@@ -57,7 +57,7 @@ export default function LedgerPage() {
 
             setAllTransactions(transactions);
             setMembers(membersData);
-            setChamas(chamasData);
+            setSquads(squadsData);
 
         } catch(error) {
             console.error("Failed to fetch ledger data:", error);
@@ -66,7 +66,7 @@ export default function LedgerPage() {
         }
     };
     fetchData();
-  }, [activeChama]);
+  }, [activeSquad]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,7 +80,7 @@ export default function LedgerPage() {
           <CardTitle>All Transactions</CardTitle>
           <CardDescription>
             A complete record of all financial activities for{" "}
-            <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+            <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -110,7 +110,7 @@ export default function LedgerPage() {
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Member</TableHead>
-                <TableHead>Chama</TableHead>
+                <TableHead>Squad</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
               </TableRow>
@@ -119,14 +119,14 @@ export default function LedgerPage() {
               {loading ? <TableRow><TableCell colSpan={5} className="text-center">Loading transactions...</TableCell></TableRow> :
               allTransactions.map((tx: any) => {
                 const member = members.find((m) => m.id === tx.memberId);
-                const chama = chamas.find((c) => c.id === tx.chamaId);
+                const squad = squads.find((c) => c.id === tx.squadId);
                 return (
                   <TableRow key={tx.id}>
                     <TableCell>
                       {new Date(tx.date || tx.requestDate).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="font-medium">{member?.name}</TableCell>
-                    <TableCell>{chama?.name}</TableCell>
+                    <TableCell>{squad?.name}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -145,7 +145,7 @@ export default function LedgerPage() {
                {allTransactions.length === 0 && !loading && (
                 <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        No transactions for this chama.
+                        No transactions for this squad.
                     </TableCell>
                 </TableRow>
                )}

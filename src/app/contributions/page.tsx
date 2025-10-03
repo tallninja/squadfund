@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -19,12 +20,12 @@ import { Badge } from "@/components/ui/badge";
 import { getGamificationData } from "@/lib/actions";
 import { Lightbulb, Trophy, Flame, Wallet } from "lucide-react";
 import { ContributionsChart } from "@/components/contributions-chart";
-import { useChama } from "@/context/chama-context";
+import { useSquad } from "@/context/squad-context";
 import { useState, useEffect } from "react";
 import type { ContributionGamificationOutput } from "@/ai/flows/contribution-gamification";
 
 export default function ContributionsPage() {
-  const { activeChama } = useChama();
+  const { activeSquad } = useSquad();
   const [gamificationData, setGamificationData] =
     useState<ContributionGamificationOutput | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,13 +33,13 @@ export default function ContributionsPage() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const data = await getGamificationData(activeChama?.id ?? null);
+      const data = await getGamificationData(activeSquad?.id ?? null);
       setGamificationData(data);
       setLoading(false);
     };
 
     fetchData();
-  }, [activeChama]);
+  }, [activeSquad]);
 
   const sortedMembers =
     gamificationData?.memberScores.sort((a, b) => b.score - a.score) ?? [];
@@ -62,7 +63,7 @@ export default function ContributionsPage() {
               </CardTitle>
               <CardDescription>
                 How to improve engagement for{" "}
-                <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+                <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -88,7 +89,7 @@ export default function ContributionsPage() {
           </CardTitle>
           <CardDescription>
             Top contributors for{" "}
-            <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+            <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -137,7 +138,7 @@ export default function ContributionsPage() {
                     colSpan={4}
                     className="text-center text-muted-foreground"
                   >
-                    No leaderboard data available for this chama.
+                    No leaderboard data available for this squad.
                   </TableCell>
                 </TableRow>
               )}

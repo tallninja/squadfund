@@ -18,33 +18,33 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { type Loan, type Member, type Chama } from "@/lib/mock-data";
-import { getLoans, getMembers, getChamas, updateLoanStatus } from "@/lib/api";
+import { type Loan, type Member, type Squad } from "@/lib/mock-data";
+import { getLoans, getMembers, getSquads, updateLoanStatus } from "@/lib/api";
 import { Eye, CheckSquare } from "lucide-react";
-import { useChama } from "@/context/chama-context";
+import { useSquad } from "@/context/squad-context";
 import { LoanApprovalDialog } from "@/components/loan-approval-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
 export default function ApprovalsPage() {
-  const { activeChama } = useChama();
+  const { activeSquad } = useSquad();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
-  const [chamas, setChamas] = useState<Chama[]>([]);
+  const [squads, setSquads] = useState<Squad[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLoan, setSelectedLoan] = useState<{ loan: Loan; member: Member | undefined } | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [loansData, membersData, chamasData] = await Promise.all([
-        getLoans(activeChama?.id ?? null),
+      const [loansData, membersData, squadsData] = await Promise.all([
+        getLoans(activeSquad?.id ?? null),
         getMembers(), // Fetch all members to map names
-        getChamas(), // Fetch all chamas to map names
+        getSquads(), // Fetch all squads to map names
       ]);
       setLoans(loansData);
       setMembers(membersData);
-      setChamas(chamasData);
+      setSquads(squadsData);
     } catch (error) {
       console.error("Failed to fetch approvals data:", error);
     } finally {
@@ -54,7 +54,7 @@ export default function ApprovalsPage() {
 
   useEffect(() => {
     fetchData();
-  }, [activeChama]);
+  }, [activeSquad]);
 
   const getFilteredLoans = (status: "Pending" | "Approved" | "Rejected") => {
     return loans.filter((loan) => loan.status === status);
@@ -82,7 +82,7 @@ export default function ApprovalsPage() {
       <TableHeader>
         <TableRow>
           <TableHead>Member</TableHead>
-          <TableHead>Chama</TableHead>
+          <TableHead>Squad</TableHead>
           <TableHead>Amount</TableHead>
           <TableHead>Request Date</TableHead>
           <TableHead className="text-right">Actions</TableHead>
@@ -96,13 +96,13 @@ export default function ApprovalsPage() {
         ) : loanList.length > 0 ? (
           loanList.map((loan) => {
             const member = members.find((m) => m.id === loan.memberId);
-            const chama = chamas.find((c) => c.id === loan.chamaId);
+            const squad = squads.find((c) => c.id === loan.squadId);
             return (
               <TableRow key={loan.id}>
                 <TableCell className="font-medium">
                   {member?.name}
                 </TableCell>
-                <TableCell>{chama?.name}</TableCell>
+                <TableCell>{squad?.name}</TableCell>
                 <TableCell>Ksh {loan.amount.toLocaleString()}</TableCell>
                 <TableCell>{loan.requestDate}</TableCell>
                 <TableCell className="text-right">
@@ -159,7 +159,7 @@ export default function ApprovalsPage() {
                 <CardTitle>Pending Requests</CardTitle>
                 <CardDescription>
                   Review and approve or reject loan requests for{" "}
-                  <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+                  <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -173,7 +173,7 @@ export default function ApprovalsPage() {
                 <CardTitle>Approved Loans</CardTitle>
                 <CardDescription>
                   A list of all approved loans for{" "}
-                  <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+                  <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -187,7 +187,7 @@ export default function ApprovalsPage() {
                 <CardTitle>Rejected Loans</CardTitle>
                 <CardDescription>
                   A list of all rejected loans for{" "}
-                  <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+                  <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
                 </CardDescription>
               </CardHeader>
               <CardContent>

@@ -19,20 +19,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useChama } from "@/context/chama-context";
-import { CreateChamaDialog } from "./create-chama-dialog";
+import { useSquad } from "@/context/squad-context";
+import { CreateSquadDialog } from "./create-squad-dialog";
 
-export function ChamaSwitcher() {
+export function SquadSwitcher() {
   const [open, setOpen] = React.useState(false);
-  const { activeChama, setActiveChama, availableChamas } = useChama();
+  const { activeSquad, setActiveSquad, availableSquads } = useSquad();
 
-  const handleSelectChama = (chamaId: string) => {
-    if (chamaId === "all-chamas") {
-      setActiveChama(null);
+  const handleSelectSquad = (squadId: string) => {
+    if (squadId === "all-squads") {
+      setActiveSquad(null);
     } else {
-      const selectedChama =
-        availableChamas.find((chama) => chama.id === chamaId) ?? null;
-      setActiveChama(selectedChama);
+      const selectedSquad =
+        availableSquads.find((squad) => squad.id === squadId) ?? null;
+      setActiveSquad(selectedSquad);
     }
     setOpen(false);
   };
@@ -47,43 +47,43 @@ export function ChamaSwitcher() {
           className="w-[250px] justify-between"
         >
           <Landmark className="mr-2 h-4 w-4" />
-          {activeChama
-            ? activeChama.name
-            : "All Chamas"}
+          {activeSquad
+            ? activeSquad.name
+            : "All Squads"}
           <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[250px] p-0">
         <Command>
           <CommandList>
-            <CommandInput placeholder="Search chama..." />
-            <CommandEmpty>No chama found.</CommandEmpty>
+            <CommandInput placeholder="Search squad..." />
+            <CommandEmpty>No squad found.</CommandEmpty>
             <CommandGroup>
               <CommandItem
-                onSelect={() => handleSelectChama("all-chamas")}
+                onSelect={() => handleSelectSquad("all-squads")}
                 className="text-sm"
               >
                 <Landmark className="mr-2 h-4 w-4" />
-                All Chamas
+                All Squads
                 <Check
                   className={cn(
                     "ml-auto h-4 w-4",
-                    !activeChama ? "opacity-100" : "opacity-0"
+                    !activeSquad ? "opacity-100" : "opacity-0"
                   )}
                 />
               </CommandItem>
-              {availableChamas.map((chama) => (
+              {availableSquads.map((squad) => (
                 <CommandItem
-                  key={chama.id}
-                  onSelect={() => handleSelectChama(chama.id)}
+                  key={squad.id}
+                  onSelect={() => handleSelectSquad(squad.id)}
                   className="text-sm"
                 >
                   <Landmark className="mr-2 h-4 w-4" />
-                  {chama.name}
+                  {squad.name}
                   <Check
                     className={cn(
                       "ml-auto h-4 w-4",
-                      activeChama?.id === chama.id
+                      activeSquad?.id === squad.id
                         ? "opacity-100"
                         : "opacity-0"
                     )}
@@ -95,7 +95,7 @@ export function ChamaSwitcher() {
           <CommandSeparator />
           <CommandList>
             <CommandGroup>
-                <CreateChamaDialog fromCommand />
+                <CreateSquadDialog fromCommand />
             </CommandGroup>
           </CommandList>
         </Command>
