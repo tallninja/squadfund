@@ -16,31 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getGamificationData } from "@/lib/actions";
 import { Lightbulb, Trophy, Flame, TrendingUp, Wallet } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
-import { contributions, members } from "@/lib/mock-data";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-
-const chartData = [
-  { month: "January", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "February", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "March", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "April", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "May", total: contributions.reduce((acc, c) => acc + c.amount, 0) },
-  { month: "June", total: 0 },
-];
-const chartConfig = {
-  total: {
-    label: "Total Contributions",
-    color: "hsl(var(--primary))",
-  },
-};
+import { ContributionsChart } from "@/components/contributions-chart";
 
 export default async function ContributionsPage() {
   const gamificationData = await getGamificationData();
@@ -56,40 +32,7 @@ export default async function ContributionsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Contribution Trends
-            </CardTitle>
-            <CardDescription>Monthly contribution overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-64 w-full">
-              <ResponsiveContainer>
-                <BarChart data={chartData}>
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `$${value / 1000}k`}
-                  />
-                  <Tooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <Bar dataKey="total" fill="var(--color-total)" radius={4} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+        <ContributionsChart />
 
         {gamificationData?.suggestedRuleTweaks && (
           <Card>
@@ -151,6 +94,16 @@ export default async function ContributionsPage() {
                   </TableCell>
                 </TableRow>
               ))}
+               {sortedMembers.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="text-center text-muted-foreground"
+                  >
+                    No leaderboard data available.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
