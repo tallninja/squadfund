@@ -1,5 +1,7 @@
+
 'use client';
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -16,12 +18,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { chamas, members, loans } from "@/lib/mock-data";
-import { Check, X, CheckSquare } from "lucide-react";
+import { chamas, members, loans, type Loan, type Member } from "@/lib/mock-data";
+import { Eye, CheckSquare } from "lucide-react";
 import { useChama } from "@/context/chama-context";
+import { LoanApprovalDialog } from "@/components/loan-approval-dialog";
 
 export default function ApprovalsPage() {
   const { activeChama } = useChama();
+  const [selectedLoan, setSelectedLoan] = useState<{ loan: Loan; member: Member | undefined } | null>(null);
 
   const pendingLoans = loans.filter(
     (loan) =>
@@ -29,81 +33,97 @@ export default function ApprovalsPage() {
       (!activeChama || loan.chamaId === activeChama.id)
   );
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <CheckSquare className="w-8 h-8 text-primary" />
-        <h1 className="text-3xl font-bold font-headline">Loan Approvals</h1>
-      </div>
+  const handleApprove = (loanId: string) => {
+    // Logic to approve the loan
+    console.log(`Approving loan ${loanId}`);
+    setSelectedLoan(null);
+  };
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Requests</CardTitle>
-          <CardDescription>
-            Review and approve or reject loan requests for{" "}
-            <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Member</TableHead>
-                <TableHead>Chama</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Request Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pendingLoans.map((loan) => {
-                const member = members.find((m) => m.id === loan.memberId);
-                const chama = chamas.find((c) => c.id === loan.chamaId);
-                return (
-                  <TableRow key={loan.id}>
-                    <TableCell className="font-medium">
-                      {member?.name}
-                    </TableCell>
-                    <TableCell>{chama?.name}</TableCell>
-                    <TableCell>${loan.amount.toLocaleString()}</TableCell>
-                    <TableCell>{loan.requestDate}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
+  const handleReject = (loanId: string) => {
+    // Logic to reject the loan
+    console.log(`Rejecting loan ${loanId}`);
+    setSelectedLoan(null);
+  };
+
+  return (
+    <>
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-4">
+          <CheckSquare className="w-8 h-8 text-primary" />
+          <h1 className="text-3xl font-bold font-headline">Loan Approvals</h1>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Pending Requests</CardTitle>
+            <CardDescription>
+              Review and approve or reject loan requests for{" "}
+              <span className="font-semibold text-primary">{activeChama?.name ?? 'all chamas'}</span>.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Member</TableHead>
+                  <TableHead>Chama</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Request Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingLoans.map((loan) => {
+                  const member = members.find((m) => m.id === loan.memberId);
+                  const chama = chamas.find((c) => c.id === loan.chamaId);
+                  return (
+                    <TableRow key={loan.id}>
+                      <TableCell className="font-medium">
+                        {member?.name}
+                      </TableCell>
+                      <TableCell>{chama?.name}</TableCell>
+                      <TableCell>${loan.amount.toLocaleString()}</TableCell>
+                      <TableCell>{loan.requestDate}</TableCell>
+                      <TableCell className="text-right">
                         <Button
                           variant="outline"
                           size="icon"
                           className="h-8 w-8"
+                          onClick={() => setSelectedLoan({ loan, member })}
                         >
-                          <Check className="h-4 w-4" />
-                          <span className="sr-only">Approve</span>
+                          <Eye className="h-4 w-4" />
+                          <span className="sr-only">View Details</span>
                         </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="h-8 w-8"
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Reject</span>
-                        </Button>
-                      </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+                {pendingLoans.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-muted-foreground"
+                    >
+                      No pending loan requests.
                     </TableCell>
                   </TableRow>
-                );
-              })}
-              {pendingLoans.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center text-muted-foreground"
-                  >
-                    No pending loan requests.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      {selectedLoan && (
+        <LoanApprovalDialog
+          isOpen={!!selectedLoan}
+          onOpenChange={() => setSelectedLoan(null)}
+          loan={selectedLoan.loan}
+          member={selectedLoan.member}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
+      )}
+    </>
   );
 }
