@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -26,6 +27,8 @@ import { LoanApprovalDialog } from "@/components/loan-approval-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
+const ITEMS_PER_PAGE = 5;
+
 export default function ApprovalsPage() {
   const { activeSquad } = useSquad();
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -33,6 +36,11 @@ export default function ApprovalsPage() {
   const [squads, setSquads] = useState<Squad[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLoan, setSelectedLoan] = useState<{ loan: Loan; member: Member | undefined } | null>(null);
+
+  const [pendingPage, setPendingPage] = useState(1);
+  const [approvedPage, setApprovedPage] = useState(1);
+  const [rejectedPage, setRejectedPage] = useState(1);
+
 
   const fetchData = async () => {
     setLoading(true);
@@ -76,68 +84,88 @@ export default function ApprovalsPage() {
     setSelectedLoan(null);
   };
 
+  const renderLoanTable = (loanList: Loan[], status: string, currentPage: number, setCurrentPage: (page: number) => void) => {
+    const totalPages = Math.ceil(loanList.length / ITEMS_PER_PAGE);
+    const paginatedLoans = loanList.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+    );
 
-  const renderLoanTable = (loanList: Loan[], status: string) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Member</TableHead>
-          <TableHead>Squad</TableHead>
-          <TableHead>Amount</TableHead>
-          <TableHead>Request Date</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {loading ? (
+    return (
+      <>
+        <Table>
+          <TableHeader>
             <TableRow>
-                <TableCell colSpan={5} className="text-center">Loading loans...</TableCell>
+              <TableHead>Member</TableHead>
+              <TableHead>Squad</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Request Date</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-        ) : loanList.length > 0 ? (
-          loanList.map((loan) => {
-            const member = members.find((m) => m.id === loan.memberId);
-            const squad = squads.find((c) => c.id === loan.squadId);
-            return (
-              <TableRow key={loan.id}>
-                <TableCell className="font-medium">
-                  {member?.name}
-                </TableCell>
-                <TableCell>{squad?.name}</TableCell>
-                <TableCell>Ksh {loan.amount.toLocaleString()}</TableCell>
-                <TableCell>{loan.requestDate}</TableCell>
-                <TableCell className="text-right">
-                  {loan.status === "Pending" ? (
-                      <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setSelectedLoan({ loan, member })}
-                      >
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only">View Details</span>
-                      </Button>
-                  ) : (
-                      <Badge variant={loan.status === 'Approved' ? 'default' : 'destructive'}>
-                          {loan.status}
-                      </Badge>
-                  )}
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+                <TableRow>
+                    <TableCell colSpan={5} className="text-center">Loading loans...</TableCell>
+                </TableRow>
+            ) : paginatedLoans.length > 0 ? (
+              paginatedLoans.map((loan) => {
+                const member = members.find((m) => m.id === loan.memberId);
+                const squad = squads.find((c) => c.id === loan.squadId);
+                return (
+                  <TableRow key={loan.id}>
+                    <TableCell className="font-medium">
+                      {member?.name}
+                    </TableCell>
+                    <TableCell>{squad?.name}</TableCell>
+                    <TableCell>Ksh {loan.amount.toLocaleString()}</TableCell>
+                    <TableCell>{loan.requestDate}</TableCell>
+                    <TableCell className="text-right">
+                      {loan.status === "Pending" ? (
+                          <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setSelectedLoan({ loan, member })}
+                          >
+                          <Eye className="h-4 w-4" />
+                          <span className="sr-only">View Details</span>
+                          </Button>
+                      ) : (
+                          <Badge variant={loan.status === 'Approved' ? 'default' : 'destructive'}>
+                              {loan.status}
+                          </Badge>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-center text-muted-foreground"
+                >
+                  No {status.toLowerCase()} loan requests.
                 </TableCell>
               </TableRow>
-            );
-          })
-        ) : (
-          <TableRow>
-            <TableCell
-              colSpan={5}
-              className="text-center text-muted-foreground"
-            >
-              No {status.toLowerCase()} loan requests.
-            </TableCell>
-          </TableRow>
+            )}
+          </TableBody>
+        </Table>
+         {totalPages > 1 && (
+            <CardFooter className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+                    Previous
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Next
+                </Button>
+            </CardFooter>
         )}
-      </TableBody>
-    </Table>
-  );
+      </>
+    );
+  }
+
 
   return (
     <>
@@ -162,8 +190,8 @@ export default function ApprovalsPage() {
                   <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {renderLoanTable(pendingLoans, "Pending")}
+              <CardContent className="p-0">
+                {renderLoanTable(pendingLoans, "Pending", pendingPage, setPendingPage)}
               </CardContent>
             </Card>
           </TabsContent>
@@ -176,8 +204,8 @@ export default function ApprovalsPage() {
                   <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {renderLoanTable(approvedLoans, "Approved")}
+              <CardContent className="p-0">
+                {renderLoanTable(approvedLoans, "Approved", approvedPage, setApprovedPage)}
               </CardContent>
             </Card>
           </TabsContent>
@@ -190,8 +218,8 @@ export default function ApprovalsPage() {
                   <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {renderLoanTable(rejectedLoans, "Rejected")}
+              <CardContent className="p-0">
+                {renderLoanTable(rejectedLoans, "Rejected", rejectedPage, setRejectedPage)}
               </CardContent>
             </Card>
           </TabsContent>

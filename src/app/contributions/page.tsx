@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getGamificationData } from "@/lib/actions";
 import { Lightbulb, Trophy, Flame, Wallet } from "lucide-react";
 import { ContributionsChart } from "@/components/contributions-chart";
@@ -24,11 +26,14 @@ import { useSquad } from "@/context/squad-context";
 import { useState, useEffect } from "react";
 import type { ContributionGamificationOutput } from "@/ai/flows/contribution-gamification";
 
+const ITEMS_PER_PAGE = 5;
+
 export default function ContributionsPage() {
   const { activeSquad } = useSquad();
   const [gamificationData, setGamificationData] =
     useState<ContributionGamificationOutput | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,6 +41,7 @@ export default function ContributionsPage() {
       const data = await getGamificationData(activeSquad?.id ?? null);
       setGamificationData(data);
       setLoading(false);
+      setCurrentPage(1);
     };
 
     fetchData();
@@ -43,6 +49,12 @@ export default function ContributionsPage() {
 
   const sortedMembers =
     gamificationData?.memberScores.sort((a, b) => b.score - a.score) ?? [];
+
+  const totalPages = Math.ceil(sortedMembers.length / ITEMS_PER_PAGE);
+  const paginatedMembers = sortedMembers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -92,7 +104,7 @@ export default function ContributionsPage() {
             <span className="font-semibold text-primary">{activeSquad?.name ?? 'all squads'}</span>.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -112,11 +124,11 @@ export default function ContributionsPage() {
                     Loading leaderboard...
                   </TableCell>
                 </TableRow>
-              ) : sortedMembers.length > 0 ? (
-                sortedMembers.map((memberScore, index) => (
+              ) : paginatedMembers.length > 0 ? (
+                paginatedMembers.map((memberScore, index) => (
                   <TableRow key={memberScore.memberId}>
                     <TableCell className="font-bold text-lg">
-                      {index + 1}
+                      {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                     </TableCell>
                     <TableCell className="font-medium">
                       {memberScore.memberId}
@@ -145,6 +157,16 @@ export default function ContributionsPage() {
             </TableBody>
           </Table>
         </CardContent>
+        {totalPages > 1 && (
+            <CardFooter className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+                    Previous
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Next
+                </Button>
+            </CardFooter>
+        )}
       </Card>
     </div>
   );

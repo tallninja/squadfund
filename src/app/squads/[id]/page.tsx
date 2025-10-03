@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,11 +20,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getSquadById, getMembers, getContributions, getLoans } from "@/lib/api";
 import { type Squad, type Member, type Contribution, type Loan } from "@/lib/mock-data";
 import { getImageUrl } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
+
+const ITEMS_PER_PAGE = 5;
 
 export default function SquadDetailPage({ params }: { params: { id: string } }) {
   const [squad, setSquad] = useState<Squad | undefined>(undefined);
@@ -31,6 +35,10 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
   const [squadContributions, setSquadContributions] = useState<Contribution[]>([]);
   const [squadLoans, setSquadLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [membersPage, setMembersPage] = useState(1);
+  const [contributionsPage, setContributionsPage] = useState(1);
+  const [loansPage, setLoansPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,8 +58,8 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
 
         setSquad(squadData);
         setSquadMembers(membersData);
-        setSquadContributions(contributionsData);
-        setSquadLoans(loansData);
+        setSquadContributions(contributionsData.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        setSquadLoans(loansData.sort((a,b) => new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()));
 
       } catch (error) {
         console.error("Failed to fetch squad details:", error);
@@ -62,6 +70,24 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
 
     fetchData();
   }, [params.id]);
+
+  const membersTotalPages = Math.ceil(squadMembers.length / ITEMS_PER_PAGE);
+  const paginatedMembers = squadMembers.slice(
+    (membersPage - 1) * ITEMS_PER_PAGE,
+    membersPage * ITEMS_PER_PAGE
+  );
+
+  const contributionsTotalPages = Math.ceil(squadContributions.length / ITEMS_PER_PAGE);
+  const paginatedContributions = squadContributions.slice(
+    (contributionsPage - 1) * ITEMS_PER_PAGE,
+    contributionsPage * ITEMS_PER_PAGE
+  );
+
+  const loansTotalPages = Math.ceil(squadLoans.length / ITEMS_PER_PAGE);
+  const paginatedLoans = squadLoans.slice(
+    (loansPage - 1) * ITEMS_PER_PAGE,
+    loansPage * ITEMS_PER_PAGE
+  );
 
   if (loading) {
     return <div>Loading...</div>; // Or a proper loading skeleton
@@ -91,7 +117,7 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
             <CardHeader>
               <CardTitle>Members ({squadMembers.length})</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -101,7 +127,7 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {squadMembers.map((member) => (
+                  {paginatedMembers.map((member) => (
                     <TableRow key={member.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -119,6 +145,16 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
                 </TableBody>
               </Table>
             </CardContent>
+            {membersTotalPages > 1 && (
+                <CardFooter className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" size="sm" onClick={() => setMembersPage(membersPage - 1)} disabled={membersPage === 1}>
+                        Previous
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setMembersPage(membersPage + 1)} disabled={membersPage === membersTotalPages}>
+                        Next
+                    </Button>
+                </CardFooter>
+            )}
           </Card>
         </TabsContent>
         <TabsContent value="contributions">
@@ -126,7 +162,7 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
             <CardHeader>
               <CardTitle>Recent Contributions</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -136,7 +172,7 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {squadContributions.map((contribution) => {
+                  {paginatedContributions.map((contribution) => {
                     const member = squadMembers.find(m => m.id === contribution.memberId);
                     return (
                       <TableRow key={contribution.id}>
@@ -149,6 +185,16 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
                 </TableBody>
               </Table>
             </CardContent>
+            {contributionsTotalPages > 1 && (
+                <CardFooter className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" size="sm" onClick={() => setContributionsPage(contributionsPage - 1)} disabled={contributionsPage === 1}>
+                        Previous
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setContributionsPage(contributionsPage + 1)} disabled={contributionsPage === contributionsTotalPages}>
+                        Next
+                    </Button>
+                </CardFooter>
+            )}
           </Card>
         </TabsContent>
         <TabsContent value="loans">
@@ -156,7 +202,7 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
             <CardHeader>
               <CardTitle>Loan Activity</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -167,7 +213,7 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {squadLoans.map((loan) => {
+                  {paginatedLoans.map((loan) => {
                     const member = squadMembers.find(m => m.id === loan.memberId);
                     return (
                       <TableRow key={loan.id}>
@@ -188,6 +234,16 @@ export default function SquadDetailPage({ params }: { params: { id: string } }) 
                 </TableBody>
               </Table>
             </CardContent>
+            {loansTotalPages > 1 && (
+                <CardFooter className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" size="sm" onClick={() => setLoansPage(loansPage - 1)} disabled={loansPage === 1}>
+                        Previous
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setLoansPage(loansPage + 1)} disabled={loansPage === loansTotalPages}>
+                        Next
+                    </Button>
+                </CardFooter>
+            )}
           </Card>
         </TabsContent>
       </Tabs>

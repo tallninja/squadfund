@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -26,12 +27,14 @@ import { useEffect, useState } from "react";
 import { getSquads, getContributions, getMembers } from "@/lib/api";
 import { type Squad, type Contribution, type Member } from "@/lib/mock-data";
 
+const ITEMS_PER_PAGE = 5;
 
 export default function DashboardPage() {
   const [squads, setSquads] = useState<Squad[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
 
   useEffect(() => {
@@ -58,6 +61,12 @@ export default function DashboardPage() {
   const totalContributions = contributions.reduce(
     (acc, curr) => acc + curr.amount,
     0
+  );
+
+  const totalPages = Math.ceil(squads.length / ITEMS_PER_PAGE);
+  const paginatedSquads = squads.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   return (
@@ -122,7 +131,7 @@ export default function DashboardPage() {
           <CardTitle>Squad Overview</CardTitle>
           <CreateSquadDialog />
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -139,7 +148,7 @@ export default function DashboardPage() {
             </TableHeader>
             <TableBody>
               {loading ? <TableRow><TableCell colSpan={5} className="text-center">Loading squads...</TableCell></TableRow> :
-              squads.map((squad) => {
+              paginatedSquads.map((squad) => {
                 const squadContributions = contributions
                   .filter((c) => c.squadId === squad.id)
                   .reduce((acc, curr) => acc + curr.amount, 0);
@@ -187,9 +196,24 @@ export default function DashboardPage() {
                   </TableRow>
                 );
               })}
+              {paginatedSquads.length === 0 && !loading && (
+                 <TableRow>
+                    <TableCell colSpan={5} className="text-center">No squads found.</TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
+         {totalPages > 1 && (
+            <CardFooter className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+                    Previous
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Next
+                </Button>
+            </CardFooter>
+        )}
       </Card>
     </div>
   );
