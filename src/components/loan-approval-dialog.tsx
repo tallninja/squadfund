@@ -81,7 +81,7 @@ export function LoanApprovalDialog({
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             <p className="text-sm font-medium text-muted-foreground">Amount Requested</p>
-            <p className="text-sm font-semibold text-right">${loan.amount.toLocaleString()}</p>
+            <p className="text-sm font-semibold text-right">Ksh {loan.amount.toLocaleString()}</p>
 
             <p className="text-sm font-medium text-muted-foreground">Request Date</p>
             <p className="text-sm text-right">{requestDate.toLocaleDateString()}</p>

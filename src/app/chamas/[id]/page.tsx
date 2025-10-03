@@ -101,7 +101,7 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
                     return (
                       <TableRow key={contribution.id}>
                         <TableCell className="font-medium">{member?.name}</TableCell>
-                        <TableCell>${contribution.amount.toLocaleString()}</TableCell>
+                        <TableCell>Ksh {contribution.amount.toLocaleString()}</TableCell>
                         <TableCell>{new Date(contribution.date).toLocaleDateString()}</TableCell>
                       </TableRow>
                     )
@@ -132,7 +132,7 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
                     return (
                       <TableRow key={loan.id}>
                         <TableCell className="font-medium">{member?.name}</TableCell>
-                        <TableCell>${loan.amount.toLocaleString()}</TableCell>
+                        <TableCell>Ksh {loan.amount.toLocaleString()}</TableCell>
                         <TableCell>{loan.requestDate}</TableCell>
                         <TableCell>
                           <Badge variant={

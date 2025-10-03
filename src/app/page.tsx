@@ -40,7 +40,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${totalContributions.toLocaleString()}
+              Ksh {totalContributions.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               +20.1% from last month
@@ -113,7 +113,7 @@ export default function DashboardPage() {
                       <Badge variant="outline">Active</Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      ${chamaContributions.toLocaleString()}
+                      Ksh {chamaContributions.toLocaleString()}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="flex -space-x-2 overflow-hidden">

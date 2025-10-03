@@ -109,7 +109,7 @@ export default function LedgerPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      ${tx.amount.toLocaleString()}
+                      Ksh {tx.amount.toLocaleString()}
                     </TableCell>
                   </TableRow>
                 );

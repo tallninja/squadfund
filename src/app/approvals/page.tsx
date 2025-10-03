@@ -82,7 +82,7 @@ export default function ApprovalsPage() {
                 {member?.name}
               </TableCell>
               <TableCell>{chama?.name}</TableCell>
-              <TableCell>${loan.amount.toLocaleString()}</TableCell>
+              <TableCell>Ksh {loan.amount.toLocaleString()}</TableCell>
               <TableCell>{loan.requestDate}</TableCell>
               <TableCell className="text-right">
                  {loan.status === "Pending" ? (

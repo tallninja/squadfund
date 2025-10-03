@@ -102,7 +102,7 @@ export function ContributionsChart() {
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value / 1000}k`}
+                tickFormatter={(value) => `Ksh ${value / 1000}k`}
               />
               <Tooltip
                 cursor={false}
