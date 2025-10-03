@@ -1,3 +1,6 @@
+
+'use client';
+
 import {
   Card,
   CardContent,
@@ -16,20 +19,57 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { chamas, members, contributions, loans } from "@/lib/mock-data";
+import { getChamaById, getMembers, getContributions, getLoans } from "@/lib/api";
+import { type Chama, type Member, type Contribution, type Loan } from "@/lib/mock-data";
 import { getImageUrl } from "@/lib/utils";
 import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function ChamaDetailPage({ params }: { params: { id: string } }) {
-  const chama = chamas.find((c) => c.id === params.id);
+  const [chama, setChama] = useState<Chama | undefined>(undefined);
+  const [chamaMembers, setChamaMembers] = useState<Member[]>([]);
+  const [chamaContributions, setChamaContributions] = useState<Contribution[]>([]);
+  const [chamaLoans, setChamaLoans] = useState<Loan[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!chama) {
-    notFound();
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const chamaData = await getChamaById(params.id);
+        if (!chamaData) {
+          notFound();
+          return;
+        }
+
+        const [membersData, contributionsData, loansData] = await Promise.all([
+          getMembers(params.id),
+          getContributions(params.id),
+          getLoans(params.id),
+        ]);
+
+        setChama(chamaData);
+        setChamaMembers(membersData);
+        setChamaContributions(contributionsData);
+        setChamaLoans(loansData);
+
+      } catch (error) {
+        console.error("Failed to fetch chama details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id]);
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a proper loading skeleton
   }
 
-  const chamaMembers = members.filter((m) => m.chamaId === chama.id);
-  const chamaContributions = contributions.filter((c) => c.chamaId === chama.id);
-  const chamaLoans = loans.filter((l) => l.chamaId === chama.id);
+  if (!chama) {
+    return notFound();
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -97,7 +137,7 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
                 </TableHeader>
                 <TableBody>
                   {chamaContributions.map((contribution) => {
-                    const member = members.find(m => m.id === contribution.memberId);
+                    const member = chamaMembers.find(m => m.id === contribution.memberId);
                     return (
                       <TableRow key={contribution.id}>
                         <TableCell className="font-medium">{member?.name}</TableCell>
@@ -128,7 +168,7 @@ export default function ChamaDetailPage({ params }: { params: { id: string } }) 
                 </TableHeader>
                 <TableBody>
                   {chamaLoans.map((loan) => {
-                    const member = members.find(m => m.id === loan.memberId);
+                    const member = chamaMembers.find(m => m.id === loan.memberId);
                     return (
                       <TableRow key={loan.id}>
                         <TableCell className="font-medium">{member?.name}</TableCell>

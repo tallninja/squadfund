@@ -1,3 +1,5 @@
+
+'use client';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +11,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { currentUser } from "@/lib/mock-data";
+import { type User } from "@/lib/mock-data";
 import { getImageUrl } from "@/lib/utils";
+import { getCurrentUser } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 export function UserNav() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+    }
+    fetchUser();
+  }, []);
+
+  if (!currentUser) {
+    return (
+         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback>...</AvatarFallback>
+          </Avatar>
+        </Button>
+    )
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

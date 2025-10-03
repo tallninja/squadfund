@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -26,9 +27,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { chamas } from "@/lib/mock-data";
+import { createChama } from "@/lib/api";
 import { PlusCircle } from "lucide-react";
 import { CommandItem } from "@/components/ui/command";
+import { useChama } from "@/context/chama-context";
 
 const formSchema = z.object({
   name: z.string().min(3, "Chama name must be at least 3 characters long."),
@@ -38,6 +40,7 @@ export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { refreshChamas } = useChama();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,26 +49,28 @@ export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // This is where you would typically call an API to create the chama.
-    // For now, we'll just add it to our mock data.
-    const newChama = {
-      id: `chama-${chamas.length + 1}`,
-      name: values.name,
-      createdAt: new Date().toISOString().split("T")[0],
-    };
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+        await createChama(values.name);
 
-    chamas.push(newChama);
+        toast({
+            title: "Chama Created!",
+            description: `"${values.name}" has been successfully created.`,
+        });
 
-    toast({
-      title: "Chama Created!",
-      description: `"${values.name}" has been successfully created.`,
-    });
-
-    setOpen(false);
-    form.reset();
-    // Refresh the page to show the new chama in the list
-    router.refresh();
+        // Refresh the chamas list in the context
+        refreshChamas();
+        setOpen(false);
+        form.reset();
+        // router.refresh() is not needed if context handles the state
+    } catch (error) {
+        console.error("Failed to create chama:", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to create the chama. Please try again.",
+        });
+    }
   }
 
   const TriggerComponent = fromCommand ? (
@@ -112,7 +117,9 @@ export function CreateChamaDialog({ fromCommand }: { fromCommand?: boolean }) {
             />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit">Save Chama</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Saving...' : 'Save Chama'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -23,23 +24,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { chamas, members, contributions, loans } from "@/lib/mock-data";
+import { getChamas, getMembers, getContributions, getLoans } from "@/lib/api";
+import { type Chama, type Member, type Contribution, type Loan } from "@/lib/mock-data";
 import { BookText, Search } from "lucide-react";
 import { useChama } from "@/context/chama-context";
+import { useEffect, useState } from "react";
 
 export default function LedgerPage() {
   const { activeChama } = useChama();
+  const [allTransactions, setAllTransactions] = useState<(Contribution | Loan)[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [chamas, setChamas] = useState<Chama[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const allTransactions = [
-    ...contributions.map((c) => ({ ...c, type: "Contribution" })),
-    ...loans.map((l) => ({ ...l, type: "Loan" })),
-  ]
-    .filter((tx) => !activeChama || tx.chamaId === activeChama.id)
-    .sort(
-      (a, b) =>
-        new Date(b.date || b.requestDate).getTime() -
-        new Date(a.date || a.requestDate).getTime()
-    );
+  useEffect(() => {
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [contributionsData, loansData, membersData, chamasData] = await Promise.all([
+                getContributions(activeChama?.id ?? null),
+                getLoans(activeChama?.id ?? null),
+                getMembers(),
+                getChamas(),
+            ]);
+
+            const transactions = [
+                ...contributionsData.map((c) => ({ ...c, type: "Contribution" })),
+                ...loansData.map((l) => ({ ...l, type: "Loan" })),
+            ].sort(
+                (a, b) => new Date(b.date || b.requestDate).getTime() - new Date(a.date || a.requestDate).getTime()
+            );
+
+            setAllTransactions(transactions);
+            setMembers(membersData);
+            setChamas(chamasData);
+
+        } catch(error) {
+            console.error("Failed to fetch ledger data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchData();
+  }, [activeChama]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -89,7 +116,8 @@ export default function LedgerPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {allTransactions.map((tx) => {
+              {loading ? <TableRow><TableCell colSpan={5} className="text-center">Loading transactions...</TableCell></TableRow> :
+              allTransactions.map((tx: any) => {
                 const member = members.find((m) => m.id === tx.memberId);
                 const chama = chamas.find((c) => c.id === tx.chamaId);
                 return (
@@ -114,7 +142,7 @@ export default function LedgerPage() {
                   </TableRow>
                 );
               })}
-               {allTransactions.length === 0 && (
+               {allTransactions.length === 0 && !loading && (
                 <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground">
                         No transactions for this chama.

@@ -1,20 +1,24 @@
+
 'use server';
 
 import { generateGamificationScores } from '@/ai/flows/contribution-gamification';
-import { contributions, members } from './mock-data';
+import { getContributions, getMembers } from './api';
+
 
 export async function getGamificationData(chamaId: string | null) {
   try {
-    const filteredContributions = chamaId 
-      ? contributions.filter(c => c.chamaId === chamaId)
-      : contributions;
+    const [filteredContributions, allMembers] = await Promise.all([
+        getContributions(chamaId),
+        getMembers()
+    ]);
+
 
     if (filteredContributions.length === 0) {
         return { memberScores: [], suggestedRuleTweaks: "No contribution data available for this selection. Add contributions to generate insights." };
     }
       
     const memberContributionHistory = filteredContributions.map(contribution => {
-      const member = members.find(m => m.id === contribution.memberId);
+      const member = allMembers.find(m => m.id === contribution.memberId);
       return {
         memberId: member?.name || contribution.memberId,
         contributionAmount: contribution.amount,

@@ -19,13 +19,42 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight, Users, Wallet, Landmark } from "lucide-react";
-import { chamas, members, contributions } from "@/lib/mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getImageUrl } from "@/lib/utils";
 import { CreateChamaDialog } from "@/components/create-chama-dialog";
+import { useEffect, useState } from "react";
+import { getChamas, getContributions, getMembers } from "@/lib/api";
+import { type Chama, type Contribution, type Member } from "@/lib/mock-data";
 
 
 export default function DashboardPage() {
+  const [chamas, setChamas] = useState<Chama[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [chamasData, membersData, contributionsData] = await Promise.all([
+                getChamas(),
+                getMembers(),
+                getContributions(),
+            ]);
+            setChamas(chamasData);
+            setMembers(membersData);
+            setContributions(contributionsData);
+        } catch (error) {
+            console.error("Failed to fetch dashboard data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchData();
+  }, []);
+
   const totalContributions = contributions.reduce(
     (acc, curr) => acc + curr.amount,
     0
@@ -42,12 +71,16 @@ export default function DashboardPage() {
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              Ksh {totalContributions.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +20.1% from last month
-            </p>
+            {loading ? <div className="text-2xl font-bold">...</div> : 
+            <>
+                <div className="text-2xl font-bold">
+                Ksh {totalContributions.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                +20.1% from last month
+                </p>
+            </>
+            }
           </CardContent>
         </Card>
         <Card>
@@ -56,10 +89,14 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{members.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Across {chamas.length} chamas
-            </p>
+             {loading ? <div className="text-2xl font-bold">...</div> :
+            <>
+                <div className="text-2xl font-bold">+{members.length}</div>
+                <p className="text-xs text-muted-foreground">
+                Across {chamas.length} chamas
+                </p>
+            </>
+            }
           </CardContent>
         </Card>
         <Card>
@@ -68,10 +105,14 @@ export default function DashboardPage() {
             <Landmark className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{chamas.length}</div>
-            <p className="text-xs text-muted-foreground">
-              +2 active this month
-            </p>
+             {loading ? <div className="text-2xl font-bold">...</div> :
+            <>
+                <div className="text-2xl font-bold">{chamas.length}</div>
+                <p className="text-xs text-muted-foreground">
+                +2 active this month
+                </p>
+            </>
+            }
           </CardContent>
         </Card>
       </div>
@@ -97,7 +138,8 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {chamas.map((chama) => {
+              {loading ? <TableRow><TableCell colSpan={5} className="text-center">Loading chamas...</TableCell></TableRow> :
+              chamas.map((chama) => {
                 const chamaContributions = contributions
                   .filter((c) => c.chamaId === chama.id)
                   .reduce((acc, curr) => acc + curr.amount, 0);

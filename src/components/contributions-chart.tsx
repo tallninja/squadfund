@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -16,46 +17,12 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { contributions } from "@/lib/mock-data";
+import { getContributions } from "@/lib/api";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { useState, useEffect } from "react";
 import { useChama } from "@/context/chama-context";
+import { type Contribution } from "@/lib/mock-data";
 
-const getChartData = (chamaId: string | null) => {
-  const filteredContributions = chamaId
-    ? contributions.filter((c) => c.chamaId === chamaId)
-    : contributions;
-
-  const monthlyTotals: { [key: string]: number } = {
-    January: 0,
-    February: 0,
-    March: 0,
-    April: 0,
-    May: 0,
-    June: 0,
-  };
-
-  filteredContributions.forEach((c) => {
-    const month = new Date(c.date).toLocaleString("default", { month: "long" });
-    if (monthlyTotals[month] !== undefined) {
-      monthlyTotals[month] += c.amount;
-    }
-  });
-
-  // Add random data for past months for visual effect if no real data exists
-  const months = ["January", "February", "March", "April", "May", "June"];
-  const finalData = months.map((month) => {
-     if (monthlyTotals[month] > 0) {
-       return { month, total: monthlyTotals[month] };
-     }
-     if (month !== "June") { // Don't generate random for current/future month
-        return { month: month, total: Math.floor(Math.random() * (2000 - 500 + 1) + 500) }
-     }
-     return { month, total: 0 };
-  });
-
-  return finalData;
-};
 
 const chartConfig = {
   total: {
@@ -67,10 +34,45 @@ const chartConfig = {
 export function ContributionsChart() {
   const { activeChama } = useChama();
   const [chartData, setChartData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setChartData(getChartData(activeChama?.id ?? null));
+    const getChartData = async (chamaId: string | null) => {
+        setLoading(true);
+        const filteredContributions = await getContributions(chamaId);
+
+        const monthlyTotals: { [key: string]: number } = {
+            January: 0, February: 0, March: 0, April: 0, May: 0, June: 0,
+        };
+
+        filteredContributions.forEach((c: Contribution) => {
+            const month = new Date(c.date).toLocaleString("default", { month: "long" });
+            if (monthlyTotals[month] !== undefined) {
+            monthlyTotals[month] += c.amount;
+            }
+        });
+
+        // Add random data for past months for visual effect if no real data exists
+        const months = ["January", "February", "March", "April", "May", "June"];
+        const finalData = months.map((month) => {
+            if (monthlyTotals[month] > 0) {
+                return { month, total: monthlyTotals[month] };
+            }
+            if (month !== "June") { // Don't generate random for current/future month
+                return { month: month, total: Math.floor(Math.random() * (2000 - 500 + 1) + 500) }
+            }
+            return { month, total: 0 };
+        });
+        setChartData(finalData);
+        setLoading(false);
+    };
+
+    getChartData(activeChama?.id ?? null);
   }, [activeChama]);
+
+  if (loading) {
+    return <Card className="lg:col-span-2"><CardHeader><CardTitle>Contribution Trends</CardTitle></CardHeader><CardContent><p>Loading chart data...</p></CardContent></Card>;
+  }
 
   if (chartData.length === 0) {
     return null;
